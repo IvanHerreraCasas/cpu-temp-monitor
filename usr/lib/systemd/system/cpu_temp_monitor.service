@@ -3,7 +3,7 @@ Description=PC Temperature Monitor
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/temp_monitor_service.sh
+ExecStart=/usr/bin/cpu_temp_monitor_service.sh
 Restart=always
 User=root
 Group=root
