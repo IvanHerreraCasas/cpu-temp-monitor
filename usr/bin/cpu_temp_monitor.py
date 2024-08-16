@@ -25,10 +25,15 @@ def get_temperature():
 def log_temperature(args):
     log_file = args.file
 
+    log_path = Path(log_file)
+    log_path.parent.mkdir(exist_ok=True, parents=True),
+
+
     temp = get_temperature()
+    os.mkdir
     if temp is not None:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(log_file, "a") as f:
+        with log_path.open("a+") as f:
             f.write(f"{timestamp} - CPU Temperature: {temp}°C\n")
         print(f"Logged temperature: {temp}°C")
     else:
