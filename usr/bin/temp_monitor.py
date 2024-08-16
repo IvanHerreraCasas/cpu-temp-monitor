@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import datetime
 import matplotlib.dates as mdates
 import socket
+import sys
+import subprocess
 
 DEF_LOG_FILE = "/var/log/pc_temperature.log"
 DEF_PLOT_FILE = "/var/log/temperature_plot.png"
@@ -31,6 +33,12 @@ def log_temperature(args):
         print(f"Logged temperature: {temp}°C")
     else:
         print("Failed to get temperature")
+
+def openImage(path):
+    imageViewerFromCommandLine = {'linux':'xdg-open',
+                                  'win32':'explorer',
+                                  'darwin':'open'}[sys.platform]
+    subprocess.run([imageViewerFromCommandLine, path])
 
 def plot_temperature(args):
     days= int(args.days)
@@ -71,6 +79,8 @@ def plot_temperature(args):
     plt.savefig(plot_file)
     print(f"Plot saved as {plot_file}")
 
+    if args.show:
+        openImage(plot_file)
 
 
 def main():
@@ -86,6 +96,7 @@ def main():
     plot_parser.add_argument("-d", "--days", help=f"Last X days to be plotted. (default 7)", default=7)
     plot_parser.add_argument("-f", "--file", help=f"Plot file (default: {DEF_PLOT_FILE})", default=DEF_PLOT_FILE)
     plot_parser.add_argument("-l", "--log_file", default=DEF_LOG_FILE, help=f"Input log file (default: {DEF_LOG_FILE})")
+    plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
     plot_parser.set_defaults(func=plot_temperature)
 
     args = parser.parse_args()
