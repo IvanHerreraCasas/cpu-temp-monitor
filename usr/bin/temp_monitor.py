@@ -33,7 +33,7 @@ def log_temperature(args):
         print("Failed to get temperature")
 
 def plot_temperature(args):
-    days= args.days
+    days= int(args.days)
     plot_file = args.file
     log_file = args.log_file
 
