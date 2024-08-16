@@ -53,6 +53,18 @@ def log_temperature(args):
     else:
         print("Failed to get temperature")
 
+def open_file(file_path):
+    os.system(f"xdg-open {file_path}")
+
+def open_app_file(file):
+    match file:
+        case "config":
+            open_file(CONFIG_FILE)
+        case "log":
+            open_file(DEF_LOG_FILE)
+        case "plot":
+            open_file(DEF_PLOT_FILE)
+
 def openImage(path):
     imageViewerFromCommandLine = {'linux':'xdg-open',
                                   'win32':'explorer',
@@ -105,6 +117,8 @@ def plot_temperature(args):
 def main():
     parser = argparse.ArgumentParser(description="CPU Temperature Monitor CLI")
 
+    parser.add_argument("--open", choices=["config", "log", "plot"], help="Open app related files.")
+
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand")
 
     start_parser = subparsers.add_parser("log", help="Start logging CPU Temperature.")
@@ -119,7 +133,10 @@ def main():
     plot_parser.set_defaults(func=plot_temperature)
 
     args = parser.parse_args()
-    if args.subcommand is None:
+
+    if args.open is not None:
+        open_app_file(args.open)
+    elif args.subcommand is None:
         parser.print_help()
     else:
         args.func(args)
