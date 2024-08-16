@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
 
 import argparse
+import configparser
 import subprocess
 import matplotlib.pyplot as plt
 import datetime
 import matplotlib.dates as mdates
 import socket
+import os
 import sys
 import subprocess
 
-DEF_LOG_FILE = "/var/log/pc_temperature.log"
-DEF_PLOT_FILE = "/var/log/temperature_plot.png"
+from pathlib import Path
+
+CONFIG_FILE = "/etc/cpu_temp_monitor/config.ini"
+
+def load_config():
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config['Settings']
+
+settings = load_config()
+
+DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu_temp_monitor/pc_temperature.log')
+DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu_temp_monitor/temperature_plot.png')
+LOG_INTERVAL = int(settings.get('log_interval', 600))
 
 def get_temperature():
     try:
