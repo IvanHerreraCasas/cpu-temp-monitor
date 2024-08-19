@@ -27,6 +27,8 @@ settings = load_config()
 DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu_temp_monitor/pc_temperature.log')
 DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu_temp_monitor/temperature_plot.png')
 LOG_INTERVAL = int(settings.get('log_interval', 600))
+DEF_THRESHOLD = int(settings.get('threshold', 80))
+DEF_NO_THRESHOLD = bool(settings.get('no_threshold', False))
 
 def get_temperature():
     try:
@@ -90,6 +92,7 @@ def plot_temperature(args):
     log_file = args.log_file
     resolution = args.resolution
     type= args.type
+    threshold = args.threshold
 
     with open(log_file, "r") as f:
         lines = f.readlines()
@@ -148,6 +151,8 @@ def plot_temperature(args):
     plt.ylabel("Temperature (°C)")
     plt.grid(True)
 
+    plt.axhline(y = threshold, color = 'r', linestyle = '-')
+
     # Format x-axis based on resolution
     if resolution in ['interval', 'hour']:
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
@@ -179,6 +184,8 @@ def main():
     plot_parser.add_argument("-l", "--log_file", default=DEF_LOG_FILE, help=f"Input log file (default: {DEF_LOG_FILE})")
     plot_parser.add_argument("-r", "--resolution", choices=['interval', 'hour', 'day', 'month', 'auto'], default='auto', help="Time resolution for the plot")
     plot_parser.add_argument("-t", "--type", choices=['mean', 'max', 'min'], default='mean', help="Type of aggregation for the plot")
+    plot_parser.add_argument("-th", "--threshold", default=DEF_THRESHOLD, help="Threshold for the plot")
+    plot_parser.add_argument("-no-th", "--no-threshold", action="store_true", default=DEF_NO_THRESHOLD, help="No add threshold indicator")
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
     plot_parser.set_defaults(func=plot_temperature)
 
