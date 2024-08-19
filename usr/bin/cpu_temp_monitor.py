@@ -4,6 +4,8 @@ import argparse
 import configparser
 import subprocess
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 import datetime
 import matplotlib.dates as mdates
 import socket
@@ -71,10 +73,23 @@ def openImage(path):
                                   'darwin':'open'}[sys.platform]
     subprocess.run([imageViewerFromCommandLine, path])
 
+def get_aggregation(type, data):
+    if any(pd.isnull(data)):
+        return np.nan
+    match type:
+        case 'mean':
+            return np.mean(data)
+        case 'max':
+            return np.max(data)
+        case 'min':
+            return np.min(data)
+
 def plot_temperature(args):
     days= int(args.days)
     plot_file = args.file
     log_file = args.log_file
+    resolution = args.resolution
+    type= args.type
 
     with open(log_file, "r") as f:
         lines = f.readlines()
@@ -86,25 +101,58 @@ def plot_temperature(args):
         temp = float(parts[1].split(":")[1].strip()[:-2])
         data.append((timestamp, temp))
 
-    cutoff = datetime.datetime.now() - datetime.timedelta(days=days)
-    recent_data = [(t, temp) for t, temp in data if t > cutoff]
-    
-    if not recent_data:
+    df = pd.read_csv(log_file, sep=" - ", header=None, names=['timestamp', 'temperature'], engine='python')
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['temperature'] = df['temperature'].str.extract(r'(\d+\.?\d*)').astype(float)
+
+
+    # Set timestamp as index
+    df.set_index('timestamp', inplace=True)
+
+    # Filter data for the specified number of days
+    start_time = datetime.datetime.now() - datetime.timedelta(days=days)
+    end_time = datetime.datetime.now()
+    time_index = pd.date_range(start=start_time, end=end_time, freq=f'{LOG_INTERVAL}s')
+    df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=LOG_INTERVAL), method="nearest")
+ 
+    if df.empty:
         print(f"No data available for the last {days} days")
         return
 
-    timestamps, temperatures = zip(*recent_data)
+    # Resample data based on resolution
+    if resolution == 'auto':
+        if days <= 1:
+            resolution = 'interval'
+        elif days <= 35:
+            resolution = 'hour'
+        elif days <= 366:
+            resolution = 'day'
+        else:
+            resolution = 'month'
 
+    resample_map = {
+        'interval': f'{LOG_INTERVAL}s',
+        'hour': 'H',
+        'day': 'D',
+        'month': 'M'
+    }
+    df_resampled = df.resample(resample_map[resolution]).agg({'temperature': lambda x: get_aggregation(type=type, data=x)})
+
+    # Plot the data
     plt.figure(figsize=(12, 6))
-    plt.plot(timestamps, temperatures)
-    
+    plt.plot(df_resampled.index, df_resampled['temperature'])
+
     hostname = socket.gethostname()
-    plt.title(f"CPU Temperature of {hostname} Over the Last {days} Days")
+    plt.title(f"CPU Temperature of {hostname} Over the Last {days} Days ({resolution} resolution)")
     plt.xlabel("Date")
     plt.ylabel("Temperature (°C)")
     plt.grid(True)
 
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+    # Format x-axis based on resolution
+    if resolution in ['interval', 'hour']:
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
+    else:
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
     plt.gcf().autofmt_xdate()
 
     plt.savefig(plot_file)
@@ -129,6 +177,8 @@ def main():
     plot_parser.add_argument("-d", "--days", help=f"Last X days to be plotted. (default 7)", default=7)
     plot_parser.add_argument("-f", "--file", help=f"Plot file (default: {DEF_PLOT_FILE})", default=DEF_PLOT_FILE)
     plot_parser.add_argument("-l", "--log_file", default=DEF_LOG_FILE, help=f"Input log file (default: {DEF_LOG_FILE})")
+    plot_parser.add_argument("-r", "--resolution", choices=['interval', 'hour', 'day', 'month', 'auto'], default='auto', help="Time resolution for the plot")
+    plot_parser.add_argument("-t", "--type", choices=['mean', 'max', 'min'], default='mean', help="Type of aggregation for the plot")
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
     plot_parser.set_defaults(func=plot_temperature)
 
