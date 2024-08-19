@@ -88,6 +88,7 @@ def get_aggregation(type, data):
 
 def plot_temperature(args):
     days= int(args.days)
+    date_range = args.range
     plot_file = args.file
     log_file = args.log_file
     resolution = args.resolution
@@ -112,9 +113,14 @@ def plot_temperature(args):
     # Set timestamp as index
     df.set_index('timestamp', inplace=True)
 
-    # Filter data for the specified number of days
-    start_time = datetime.datetime.now() - datetime.timedelta(days=days)
-    end_time = datetime.datetime.now()
+    if date_range is not None:
+        start_time = datetime.datetime.strptime(date_range[0], "%Y%m%d_%H%M%S")
+        end_time = datetime.datetime.strptime(date_range[1], "%Y%m%d_%H%M%S")
+    else:        
+        # Filter data for the specified number of days
+        start_time = datetime.datetime.now() - datetime.timedelta(days=days)
+        end_time = datetime.datetime.now()
+
     time_index = pd.date_range(start=start_time, end=end_time, freq=f'{LOG_INTERVAL}s')
     df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=LOG_INTERVAL), method="nearest")
  
@@ -180,6 +186,7 @@ def main():
 
     plot_parser = subparsers.add_parser("plot", help="Plot CPU Temperature")
     plot_parser.add_argument("-d", "--days", help=f"Last X days to be plotted. (default 7)", default=7)
+    plot_parser.add_argument("--range", nargs=2, help="Date range to be plotted (YYYYMMDD_HHMMSS YYYYMMDD_HHMMSS). This options ignores --days parameter")
     plot_parser.add_argument("-f", "--file", help=f"Plot file (default: {DEF_PLOT_FILE})", default=DEF_PLOT_FILE)
     plot_parser.add_argument("-l", "--log_file", default=DEF_LOG_FILE, help=f"Input log file (default: {DEF_LOG_FILE})")
     plot_parser.add_argument("-r", "--resolution", choices=['interval', 'hour', 'day', 'month', 'auto'], default='auto', help="Time resolution for the plot")
