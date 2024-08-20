@@ -12,6 +12,7 @@ import socket
 import os
 import sys
 import subprocess
+import ast
 
 from pathlib import Path
 
@@ -30,32 +31,34 @@ LOG_INTERVAL = int(settings.get('log_interval', 600))
 DEF_THRESHOLD = int(settings.get('threshold', 80))
 DEF_NO_THRESHOLD = bool(settings.get('no_threshold', False))
 
-def get_temperature():
+def get_temperatures():
     try:
         output = subprocess.check_output(["sensors"]).decode()
+        temperatures = {}
         for line in output.split("\n"):
-            if "Core 0" in line:
-                return float(line.split("+")[1].split("°")[0])
+            if line.startswith("Core "):
+                core = line.split(":")[0].strip()
+                temp = float(line.split("+")[1].split("°")[0])
+                temperatures[core] = temp
+        return temperatures
     except Exception as e:
-        print(f"Error getting temperature: {e}")
+        print(f"Error getting temperatures: {e}")
     return None
 
-def log_temperature(args):
+def log_temperatures(args):
     log_file = args.file
-
     log_path = Path(log_file)
-    log_path.parent.mkdir(exist_ok=True, parents=True),
+    log_path.parent.mkdir(exist_ok=True, parents=True)
 
-
-    temp = get_temperature()
-    os.mkdir
-    if temp is not None:
+    temps = get_temperatures()
+    if temps:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with log_path.open("a+") as f:
-            f.write(f"{timestamp} - CPU Temperature: {temp}°C\n")
-        print(f"Logged temperature: {temp}°C")
+            f.write(f"{timestamp} - CPU Temperatures: {temps}\n")
+        print(f"Logged temperatures: {temps}")
     else:
-        print("Failed to get temperature")
+        print("Failed to get temperatures")
+
 
 def open_file(file_path):
     os.system(f"xdg-open {file_path}")
@@ -85,31 +88,32 @@ def get_aggregation(type, data):
             return np.max(data)
         case 'min':
             return np.min(data)
+        
+def parse_temperatures(temp_str):
+    temp_str = temp_str.split(': ', 1)[1]  # Remove "CPU Temperatures: " prefix
+    return ast.literal_eval(temp_str)
 
 def plot_temperature(args):
-    days= int(args.days)
+    days = int(args.days)
     date_range = args.range
     plot_file = args.file
     log_file = args.log_file
     resolution = args.resolution
-    type= args.type
+    type = args.type
     threshold = args.threshold
+    cores = args.cores
 
-    with open(log_file, "r") as f:
-        lines = f.readlines()
-
-    data = []
-    for line in lines:
-        parts = line.split(" - ")
-        timestamp = datetime.datetime.strptime(parts[0], "%Y-%m-%d %H:%M:%S")
-        temp = float(parts[1].split(":")[1].strip()[:-2])
-        data.append((timestamp, temp))
-
-    df = pd.read_csv(log_file, sep=" - ", header=None, names=['timestamp', 'temperature'], engine='python')
+    # Read the log file
+    df = pd.read_csv(log_file, sep=" - ", header=None, names=['timestamp', 'temperatures'], engine='python')
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['temperature'] = df['temperature'].str.extract(r'(\d+\.?\d*)').astype(float)
-
-
+    
+    # Parse the temperatures string into a dictionary
+    df['temperatures'] = df['temperatures'].apply(parse_temperatures)
+    
+    # Explode the temperatures dictionary into separate columns
+    temp_df = df['temperatures'].apply(pd.Series)
+    df = pd.concat([df['timestamp'], temp_df], axis=1)
+    
     # Set timestamp as index
     df.set_index('timestamp', inplace=True)
 
@@ -117,7 +121,6 @@ def plot_temperature(args):
         start_time = datetime.datetime.strptime(date_range[0], "%Y%m%d_%H%M%S")
         end_time = datetime.datetime.strptime(date_range[1], "%Y%m%d_%H%M%S")
     else:        
-        # Filter data for the specified number of days
         start_time = datetime.datetime.now() - datetime.timedelta(days=days)
         end_time = datetime.datetime.now()
 
@@ -125,7 +128,7 @@ def plot_temperature(args):
     df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=LOG_INTERVAL), method="nearest")
  
     if df.empty:
-        print(f"No data available for the last {days} days")
+        print(f"No data available for the specified time range")
         return
 
     # Resample data based on resolution
@@ -145,19 +148,43 @@ def plot_temperature(args):
         'day': 'D',
         'month': 'M'
     }
-    df_resampled = df.resample(resample_map[resolution]).agg({'temperature': lambda x: get_aggregation(type=type, data=x)})
+    
+    df_resampled = df.resample(resample_map[resolution]).agg({col: lambda x: get_aggregation(type=type, data=x) for col in df.columns})
 
     # Plot the data
     plt.figure(figsize=(12, 6))
-    plt.plot(df_resampled.index, df_resampled['temperature'])
+    
+    if cores[0].startswith("all"):
+        match cores[0]:
+            case "all":
+                for column in df_resampled.columns:
+                    plt.plot(df_resampled.index, df_resampled[column], label=column)
+            case "all-mean":
+                df_resampled['mean-temperature'] = df_resampled.mean(axis=1)
+                plt.plot(df_resampled.index, df_resampled['mean-temperature'], label='Mean CPU Temperature')
+            case "all-max":
+                df_resampled['max-temperature'] = df_resampled.max(axis=1)
+                plt.plot(df_resampled.index, df_resampled['max-temperature'], label='Max CPU Temperature')
+            case "all-min":
+                df_resampled['min-temperature'] = df_resampled.min(axis=1)
+                plt.plot(df_resampled.index, df_resampled['min-temperature'], label='Min CPU Temperature')
+    else:
+        for core in cores:
+            if core in df_resampled.columns:
+                plt.plot(df_resampled.index, df_resampled[core], label=core)
+            else:
+                print(f"Warning: Core {core} not found in the data")
 
     hostname = socket.gethostname()
     plt.title(f"CPU Temperature of {hostname} Over the Last {days} Days ({resolution} resolution)")
     plt.xlabel("Date")
     plt.ylabel("Temperature (°C)")
     plt.grid(True)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.tight_layout(pad=1.25)
 
-    plt.axhline(y = threshold, color = 'r', linestyle = '-')
+    if not args.no_threshold:
+        plt.axhline(y=threshold, color='r', linestyle='-', label='Threshold')
 
     # Format x-axis based on resolution
     if resolution in ['interval', 'hour']:
@@ -182,7 +209,7 @@ def main():
 
     start_parser = subparsers.add_parser("log", help="Start logging CPU Temperature.")
     start_parser.add_argument("-f", "--file", help=f"Log file (default: {DEF_LOG_FILE})", default=DEF_LOG_FILE)
-    start_parser.set_defaults(func=log_temperature)
+    start_parser.set_defaults(func=log_temperatures)
 
     plot_parser = subparsers.add_parser("plot", help="Plot CPU Temperature")
     plot_parser.add_argument("-d", "--days", help=f"Last X days to be plotted. (default 7)", default=7)
@@ -194,6 +221,7 @@ def main():
     plot_parser.add_argument("-th", "--threshold", default=DEF_THRESHOLD, help="Threshold for the plot")
     plot_parser.add_argument("-no-th", "--no-threshold", action="store_true", default=DEF_NO_THRESHOLD, help="No add threshold indicator")
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
+    plot_parser.add_argument("-c", "--cores", nargs='+', default=['all-mean'], help="Specify cores to plot (e.g., 'Core 0 Core 1'), 'all', 'all-mean', 'all-min', 'all-max' for all cores")
     plot_parser.set_defaults(func=plot_temperature)
 
     args = parser.parse_args()
