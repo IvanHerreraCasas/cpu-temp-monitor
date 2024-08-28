@@ -5,12 +5,10 @@ PREFIX ?= /usr/
 DESTDIR ?=
 
 # Directories
-BINDIR = $(DESTDIR)$(PREFIX)/bin
 SHAREDIR = $(DESTDIR)$(PREFIX)/share/cpu-temp-monitor
 ETCDIR = $(DESTDIR)/etc/cpu-temp-monitor
 
 # Files
-SERVICE_SCRIPT = cpu-temp-monitor/usr/bin/cpu-temp-monitor-service.sh
 PYTHON_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu-temp-monitor.py
 CONFIG_FILE = cpu-temp-monitor/etc/cpu-temp-monitor/config.ini
 
@@ -22,12 +20,9 @@ all:
 
 install:
 	# Create directories
-	install -d $(BINDIR)
 	install -d $(SHAREDIR)
 	install -d $(ETCDIR)
 
-	# Install service script
-	install -m 755 $(SERVICE_SCRIPT) $(BINDIR)/cpu-temp-monitor-service.sh
 
 	# Install Python script
 	install -m 744 $(PYTHON_SCRIPT) $(SHAREDIR)/cpu-temp-monitor.py

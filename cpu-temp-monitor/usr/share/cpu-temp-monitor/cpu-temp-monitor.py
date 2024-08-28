@@ -21,15 +21,34 @@ CONFIG_FILE = "/etc/cpu-temp-monitor/config.ini"
 def load_config():
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
-    return config['Settings']
+    return config
 
-settings = load_config()
+settings = load_config()['Settings']
+cron = load_config()['cron']
 
 DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu-temp-monitor/pc_temperature.log')
 DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu-temp-monitor/temperature_plot.png')
-LOG_INTERVAL = int(settings.get('log_interval', 600))
-DEF_THRESHOLD = int(settings.get('threshold', 80))
+LOG_INTERVAL = cron.getint('interval', 10)
+DEF_THRESHOLD = settings.getint('threshold', 80)
 DEF_NO_THRESHOLD = bool(settings.get('no_threshold', False))
+CRON_FILE = '/etc/cron.d/cpu-temp-monitor'
+
+def write_config(config):
+    with open(CONFIG_FILE, 'w') as configfile:
+        config.write(configfile)
+
+def update_cron(interval):    
+    cron_job = f"*/{interval} * * * * root cpu-temp-monitor log\n"
+    
+    with open(CRON_FILE, 'w') as cron_file:
+        cron_file.write(cron_job)
+
+def set_interval(args):
+    interval = args.interval
+    config = load_config()
+    config['cron']['interval'] = str(interval)
+    write_config(config)
+    update_cron(interval)
 
 def get_temperatures():
     try:
@@ -143,7 +162,7 @@ def plot_temperature(args):
             resolution = 'month'
 
     resample_map = {
-        'interval': f'{LOG_INTERVAL}s',
+        'interval': f'{LOG_INTERVAL}m',
         'hour': 'H',
         'day': 'D',
         'month': 'M'
@@ -223,6 +242,10 @@ def main():
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
     plot_parser.add_argument("-c", "--cores", nargs='+', default=['all-mean'], help="Specify cores to plot (e.g., 'Core 0 Core 1'), 'all', 'all-mean', 'all-min', 'all-max' for all cores")
     plot_parser.set_defaults(func=plot_temperature)
+
+    cron_parser = subparsers.add_parser("cron", help="Manage cron jobs for logging and plotting.")
+    cron_parser.add_argument("-i", "--interval", type=int, help="Interval in minutes for logging CPU temperature.")
+    cron_parser.set_defaults(func=set_interval)
 
     args = parser.parse_args()
 
