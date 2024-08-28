@@ -12,7 +12,7 @@ ETCDIR = $(DESTDIR)/etc/cpu-temp-monitor
 # Files
 SERVICE_SCRIPT = cpu-temp-monitor/usr/bin/cpu-temp-monitor-service.sh
 PYTHON_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu-temp-monitor.py
-CONFIG_FILE = cpu-temp-monitor/etc/cpu-temp-monitor/config.conf
+CONFIG_FILE = cpu-temp-monitor/etc/cpu-temp-monitor/config.ini
 
 # Targets
 .PHONY: all install clean
@@ -33,7 +33,7 @@ install:
 	install -m 744 $(PYTHON_SCRIPT) $(SHAREDIR)/cpu-temp-monitor.py
 
 	# Install config file
-	install -m 644 $(CONFIG_FILE) $(ETCDIR)/config.conf
+	install -m 644 $(CONFIG_FILE) $(ETCDIR)/config.ini
 
 clean:
 	@echo "Nothing to clean."

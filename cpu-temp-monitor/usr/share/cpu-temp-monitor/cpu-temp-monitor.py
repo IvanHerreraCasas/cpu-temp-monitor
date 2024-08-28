@@ -16,7 +16,7 @@ import ast
 
 from pathlib import Path
 
-CONFIG_FILE = "/etc/cpu-temp-monitor/config.conf"
+CONFIG_FILE = "/etc/cpu-temp-monitor/config.ini"
 
 def load_config():
     config = configparser.ConfigParser()
