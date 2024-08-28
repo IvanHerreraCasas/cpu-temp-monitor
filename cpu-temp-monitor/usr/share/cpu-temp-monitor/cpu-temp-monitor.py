@@ -16,7 +16,7 @@ import ast
 
 from pathlib import Path
 
-CONFIG_FILE = "/etc/cpu_temp_monitor/config.ini"
+CONFIG_FILE = "/etc/cpu-temp-monitor/config.conf"
 
 def load_config():
     config = configparser.ConfigParser()
@@ -25,8 +25,8 @@ def load_config():
 
 settings = load_config()
 
-DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu_temp_monitor/pc_temperature.log')
-DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu_temp_monitor/temperature_plot.png')
+DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu-temp-monitor/pc_temperature.log')
+DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu-temp-monitor/temperature_plot.png')
 LOG_INTERVAL = int(settings.get('log_interval', 600))
 DEF_THRESHOLD = int(settings.get('threshold', 80))
 DEF_NO_THRESHOLD = bool(settings.get('no_threshold', False))

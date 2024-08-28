@@ -1,7 +1,7 @@
 #!/bin/bash
-source /etc/cpu_temp_monitor/config.ini
+source /etc/cpu-temp-monitor/config.conf
 LOG_INTERVAL=${Settings__log_interval:-600}
 while true; do
-    /usr/bin/cpu_temp_monitor.py log
+    /usr/bin/cpu-temp-monitor log
     sleep $LOG_INTERVAL
 done
