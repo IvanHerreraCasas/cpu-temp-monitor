@@ -27,7 +27,8 @@ settings = load_config()['Settings']
 cron = load_config()['cron']
 
 DEF_LOG_FILE = settings.get('log_file', '/var/log/cpu-temp-monitor/pc_temperature.log')
-DEF_PLOT_FILE = settings.get('plot_file', '/var/log/cpu-temp-monitor/temperature_plot.png')
+DEF_PLOT_DIR = settings.get('plot_dir', '~/.local/share/cpu-temp-monitor/')
+DEF_PLOT_FILENAME = settings.get('plot_filename', 'cpu_temperature_plot.png')
 LOG_INTERVAL = cron.getint('interval', 10)
 DEF_THRESHOLD = settings.getint('threshold', 80)
 DEF_NO_THRESHOLD = bool(settings.get('no_threshold', False))
@@ -78,7 +79,6 @@ def log_temperatures(args):
     else:
         print("Failed to get temperatures")
 
-
 def open_file(file_path):
     os.system(f"xdg-open {file_path}")
 
@@ -89,7 +89,8 @@ def open_app_file(file):
         case "log":
             open_file(DEF_LOG_FILE)
         case "plot":
-            open_file(DEF_PLOT_FILE)
+            def_plot_filepath = Path(os.path.expanduser(DEF_PLOT_DIR), DEF_PLOT_FILENAME) 
+            open_file(def_plot_filepath)
 
 def openImage(path):
     imageViewerFromCommandLine = {'linux':'xdg-open',
@@ -115,7 +116,8 @@ def parse_temperatures(temp_str):
 def plot_temperature(args):
     days = int(args.days)
     date_range = args.range
-    plot_file = args.file
+    plot_filepath = args.filepath
+    plot_filename = args.filename
     log_file = args.log_file
     resolution = args.resolution
     type = args.type
@@ -169,7 +171,7 @@ def plot_temperature(args):
     }
     
     df_resampled = df.resample(resample_map[resolution]).agg({col: lambda x: get_aggregation(type=type, data=x) for col in df.columns})
-    
+
     # Plot the data
     plt.figure(figsize=(12, 6))
     
@@ -212,11 +214,17 @@ def plot_temperature(args):
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
     plt.gcf().autofmt_xdate()
 
-    plt.savefig(plot_file)
-    print(f"Plot saved as {plot_file}")
+    if plot_filepath is None:
+        plot_filepath = Path(os.path.expanduser(DEF_PLOT_DIR), plot_filename)
+    
+    plot_path = Path(plot_filepath)
+    plot_path.parent.mkdir(exist_ok=True, parents=True)
+
+    plt.savefig(plot_path)
+    print(f"Plot saved as {plot_filepath}")
 
     if args.show:
-        openImage(plot_file)
+        openImage(plot_filepath)
 
 
 def main():
@@ -233,7 +241,8 @@ def main():
     plot_parser = subparsers.add_parser("plot", help="Plot CPU Temperature")
     plot_parser.add_argument("-d", "--days", help=f"Last X days to be plotted. (default 7)", default=7)
     plot_parser.add_argument("--range", nargs=2, help="Date range to be plotted (YYYYMMDD_HHMMSS YYYYMMDD_HHMMSS). This options ignores --days parameter")
-    plot_parser.add_argument("-f", "--file", help=f"Plot file (default: {DEF_PLOT_FILE})", default=DEF_PLOT_FILE)
+    plot_parser.add_argument("-fp", "--filepath", help=f"Plot filepath")
+    plot_parser.add_argument("-fn", "--filename", help=f"Plot filename (default: {DEF_PLOT_FILENAME})", default=DEF_PLOT_FILENAME)
     plot_parser.add_argument("-l", "--log_file", default=DEF_LOG_FILE, help=f"Input log file (default: {DEF_LOG_FILE})")
     plot_parser.add_argument("-r", "--resolution", choices=['interval', 'hour', 'day', 'month', 'auto'], default='auto', help="Time resolution for the plot")
     plot_parser.add_argument("-t", "--type", choices=['mean', 'max', 'min'], default='mean', help="Type of aggregation for the plot")
