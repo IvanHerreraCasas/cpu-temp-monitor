@@ -143,8 +143,8 @@ def plot_temperature(args):
         start_time = datetime.datetime.now() - datetime.timedelta(days=days)
         end_time = datetime.datetime.now()
 
-    time_index = pd.date_range(start=start_time, end=end_time, freq=f'{LOG_INTERVAL}s')
-    df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=LOG_INTERVAL), method="nearest")
+    time_index = pd.date_range(start=start_time, end=end_time, freq=f'{LOG_INTERVAL}T')
+    df = df.reindex(time_index, tolerance=pd.Timedelta(minutes=LOG_INTERVAL), method="nearest")
  
     if df.empty:
         print(f"No data available for the specified time range")
@@ -162,14 +162,14 @@ def plot_temperature(args):
             resolution = 'month'
 
     resample_map = {
-        'interval': f'{LOG_INTERVAL}m',
+        'interval': f'{LOG_INTERVAL}T',
         'hour': 'H',
         'day': 'D',
         'month': 'M'
     }
     
     df_resampled = df.resample(resample_map[resolution]).agg({col: lambda x: get_aggregation(type=type, data=x) for col in df.columns})
-
+    
     # Plot the data
     plt.figure(figsize=(12, 6))
     
