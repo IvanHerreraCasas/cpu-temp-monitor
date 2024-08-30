@@ -13,9 +13,6 @@ def main():
     monitor = CPUTempMonitor(CONFIG_FILE, CRON_FILE)
 
     parser = argparse.ArgumentParser(description="CPU Temperature Monitor CLI")
-
-    parser.add_argument("--open", choices=["config", "log", "plot"], help="Open app related files.")
-
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand")
 
     start_parser = subparsers.add_parser("log", help="Start logging CPU Temperature.")
@@ -40,11 +37,13 @@ def main():
     cron_parser.add_argument("-i", "--interval", type=int, help="Interval in minutes for logging CPU temperature.")
     cron_parser.set_defaults(func=monitor.set_interval)
 
+    open_parser = subparsers.add_parser("open", help="Open application-related files")
+    open_parser.add_argument("file", choices=["config", "log", "plot"], help="File to open")
+    open_parser.set_defaults(func=monitor.open_app_file)
+
     args = parser.parse_args()
 
-    if args.open is not None:
-        monitor.open_app_file(args.open)
-    elif args.subcommand is None:
+    if args.subcommand is None:
         parser.print_help()
     else:
         args.func(args)
