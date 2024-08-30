@@ -15,9 +15,9 @@ def main():
     parser = argparse.ArgumentParser(description="CPU Temperature Monitor CLI")
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand")
 
-    start_parser = subparsers.add_parser("log", help="Start logging CPU Temperature.")
-    start_parser.add_argument("-f", "--file", help=f"Log file (default: {monitor.def_log_file})", default=monitor.def_log_file)
-    start_parser.set_defaults(func=monitor.log_temperatures)
+    log_parser = subparsers.add_parser("log", help="Log CPU Temperature.")
+    log_parser.add_argument("-f", "--file", help=f"Log file path (default: {monitor.def_log_file})", default=monitor.def_log_file)
+    log_parser.set_defaults(func=monitor.log_temperatures)
 
     plot_parser = subparsers.add_parser("plot", help="Plot CPU Temperature")
     plot_parser.add_argument("-d", "--days", type=int, help=f"Last X days to be plotted. (default 7)", default=7)
