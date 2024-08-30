@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from cpu_tm_utils import open_file
 from cpu_tm_logging import log_temperatures
-from cpu_tm_plotting import plot_temperature
+from cpu_tm_plotting import plot_temperatures
 
 class CPUTempMonitor:
     def __init__(self, config_file, cron_file):
@@ -68,7 +68,7 @@ class CPUTempMonitor:
     def log_temperatures(self, args):
         log_temperatures(args)
 
-    def plot_temperature(self, args):
+    def plot_temperatures(self, args):
         args.interval = self.log_interval
 
         if args.filepath is None:
@@ -81,7 +81,7 @@ class CPUTempMonitor:
             args.start_time = datetime.now() - timedelta(days=args.days)
             args.end_time = datetime.now()
 
-        plot_temperature(args)
+        plot_temperatures(args)
 
     def set_interval(self, args):
         self.config['cron']['interval'] = str(args.interval)

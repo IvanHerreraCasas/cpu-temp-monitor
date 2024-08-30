@@ -92,7 +92,7 @@ def save_plot(args):
     return plot_filepath
 
 
-def plot_temperature(args):
+def plot_temperatures(args):
     days = args.days
     resolution = args.resolution
     threshold = args.threshold
