@@ -85,7 +85,7 @@ def save_plot(args):
     plot_path = Path(plot_filepath)
     plot_path.parent.mkdir(exist_ok=True, parents=True)
 
-    plt.savefig(plot_path)
+    plt.savefig(plot_path, bbox_inches='tight')
 
     print(f"Plot saved as {plot_filepath}")
 
@@ -137,7 +137,7 @@ def plot_temperature(args):
     plt.xlabel("Date")
     plt.ylabel("Temperature (°C)")
     plt.grid(True)
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25), ncol=4)
     plt.tight_layout(pad=1.25)
 
     if args.add_threshold:
