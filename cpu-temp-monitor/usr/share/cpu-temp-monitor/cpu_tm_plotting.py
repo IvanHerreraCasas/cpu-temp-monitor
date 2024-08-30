@@ -126,8 +126,9 @@ def plot_temperature(args):
                 plt.plot(df_resampled.index, df_resampled['min-temperature'], label='Min CPU Temperature')
     else:
         for core in cores:
-            if core in df_resampled.columns:
-                plt.plot(df_resampled.index, df_resampled[core], label=core)
+            core_label = f"Core {core}"
+            if core_label in df_resampled.columns:
+                plt.plot(df_resampled.index, df_resampled[core_label], label=core_label)
             else:
                 print(f"Warning: Core {core} not found in the data")
 

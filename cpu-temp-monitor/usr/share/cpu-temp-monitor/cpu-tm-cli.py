@@ -33,7 +33,7 @@ def main():
     plot_parser.add_argument("-th", "--threshold", type=int, default=monitor.def_threshold, help="Threshold for the plot")
     plot_parser.add_argument("-add-th", "--add-threshold", action="store_true", help="Add threshold indicator")
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
-    plot_parser.add_argument("-c", "--cores", nargs='+', default=['all-mean'], help="Specify cores to plot (e.g., 'Core 0 Core 1'), 'all', 'all-mean', 'all-min', 'all-max' for all cores")
+    plot_parser.add_argument("-c", "--cores", nargs='+', default=['all-mean'], help="Specify cores to plot (e.g., 0, 1, 2, ...), 'all', 'all-mean', 'all-min', 'all-max' for all cores")
     plot_parser.set_defaults(func=monitor.plot_temperature)
 
     cron_parser = subparsers.add_parser("cron", help="Manage cron jobs for logging and plotting.")
