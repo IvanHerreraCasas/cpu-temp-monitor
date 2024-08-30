@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from pathlib import Path
 
-from cpu_tm_utils import open_image
+from cpu_tm_utils import open_file
 
 def parse_temperatures(temp_str):
     temp_str = temp_str.split(': ', 1)[1]  # Remove "CPU Temperatures: " prefix
@@ -152,4 +152,4 @@ def plot_temperature(args):
     plot_filepath = save_plot(args)
 
     if args.show:
-        open_image(plot_filepath)
+        open_file(plot_filepath)
