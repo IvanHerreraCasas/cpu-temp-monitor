@@ -51,10 +51,11 @@ class CPUTempMonitor:
         return self.settings.getint('threshold', 80)
     
 
-    def open_app_file(self, file):
+    def open_app_file(self, args):
+        file = args.file
         match file:
             case "config":
-                open_file(self.CONFIG_FILE)
+                open_file(self.config_file)
             case "log":
                 log_file = self.def_log_file
                 open_file(log_file)
