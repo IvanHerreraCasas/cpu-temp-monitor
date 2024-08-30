@@ -133,7 +133,7 @@ def plot_temperature(args):
                 print(f"Warning: Core {core} not found in the data")
 
     hostname = socket.gethostname()
-    plt.title(f"CPU Temperature of {hostname} Over the Last {days} Days ({resolution} resolution)")
+    plt.title(f"CPU Temperature of {hostname} ({resolution} resolution)")
     plt.xlabel("Date")
     plt.ylabel("Temperature (°C)")
     plt.grid(True)
