@@ -24,7 +24,7 @@ def get_aggregation(type, data):
             return np.min(data)
 
 def get_log_temperatures(args):
-    log_file = args.log_file
+    log_file = args.input
     # Read the log file
     df = pd.read_csv(log_file, sep=" - ", header=None, names=['timestamp', 'temperatures'], engine='python')
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -143,11 +143,7 @@ def plot_temperatures(args):
     if args.add_threshold:
         plt.axhline(y=threshold, color='r', linestyle='-', label='Threshold')
 
-    # Format x-axis based on resolution
-    if resolution in ['interval', 'hour']:
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
-    else:
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+
     plt.gcf().autofmt_xdate()
 
     plot_filepath = save_plot(args)
