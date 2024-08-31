@@ -28,7 +28,7 @@ def main():
     plot_parser.add_argument("-r", "--resolution", choices=['interval', 'hour', 'day', 'month', 'auto'], default='auto', help="Time resolution for the plot")
     plot_parser.add_argument("-t", "--type", choices=['mean', 'max', 'min'], default='mean', help="Type of aggregation for the plot")
     plot_parser.add_argument("-th", "--threshold", type=int, default=monitor.def_threshold, help="Threshold for the plot")
-    plot_parser.add_argument("-show-th", "--add-threshold", action="store_true", help="Show threshold line on plot")
+    plot_parser.add_argument("-show-th", "--show-threshold", action="store_true", help="Show threshold line on plot")
     plot_parser.add_argument("--show", action="store_true", help="Show the plot after saving")
     plot_parser.add_argument("-c", "--cores", nargs='+', default=['all-mean'], help="Specify cores to plot (e.g., 0, 1, 2, ...), 'all', 'all-mean', 'all-min', 'all-max' for all cores")
     plot_parser.set_defaults(func=monitor.plot_temperatures)
