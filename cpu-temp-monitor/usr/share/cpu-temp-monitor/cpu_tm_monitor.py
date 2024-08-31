@@ -53,13 +53,12 @@ class CPUTempMonitor:
 
     def open_app_file(self, args):
         file = args.file
-        match file:
-            case "config":
+        if file == "config":
                 open_file(self.config_file)
-            case "log":
+        elif file == "log":
                 log_file = self.def_log_file
                 open_file(log_file)
-            case "plot":
+        elif file == "plot":
                 plot_dir = self.def_plot_dir
                 plot_filename = self.def_plot_filename
                 plot_filepath = Path(os.path.expanduser(plot_dir), plot_filename)

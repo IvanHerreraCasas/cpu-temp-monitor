@@ -15,12 +15,11 @@ def parse_temperatures(temp_str):
 def get_aggregation(type, data):
     if any(pd.isnull(data)):
         return np.nan
-    match type:
-        case 'mean':
+    if  type == 'mean':
             return np.mean(data)
-        case 'max':
+    elif type == "max":
             return np.max(data)
-        case 'min':
+    elif type == "min":
             return np.min(data)
 
 def get_log_temperatures(args):
@@ -111,17 +110,16 @@ def plot_temperatures(args):
     plt.figure(figsize=(12, 6))
     
     if cores[0].startswith("all"):
-        match cores[0]:
-            case "all":
+        if cores[0] == "all":
                 for column in df_resampled.columns:
                     plt.plot(df_resampled.index, df_resampled[column], label=column)
-            case "all-mean":
+        elif cores[0] == "all-mean":
                 df_resampled['mean-temperature'] = df_resampled.mean(axis=1)
                 plt.plot(df_resampled.index, df_resampled['mean-temperature'], label='Mean CPU Temperature')
-            case "all-max":
+        elif cores[0] == "all-max":
                 df_resampled['max-temperature'] = df_resampled.max(axis=1)
                 plt.plot(df_resampled.index, df_resampled['max-temperature'], label='Max CPU Temperature')
-            case "all-min":
+        elif cores[0] == "all-min":
                 df_resampled['min-temperature'] = df_resampled.min(axis=1)
                 plt.plot(df_resampled.index, df_resampled['min-temperature'], label='Min CPU Temperature')
     else:
