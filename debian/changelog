@@ -1,0 +1,5 @@
+cpu-temp-monitor (1.0.0-1) noble; urgency=medium
+
+  * Initial release.
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Sat, 31 Aug 2024 09:58:24 -0500
