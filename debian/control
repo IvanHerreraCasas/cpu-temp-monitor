@@ -12,6 +12,12 @@ Rules-Requires-Root: no
 Package: cpu-temp-monitor
 Architecture: all
 Multi-Arch: foreign
-Depends: lm-sensors, python3 (>= 3.6), python3-matplotlib, python3-pandas, python3-numpy, ${misc:Depends}, ${shlibs:Depends}
+Depends: lm-sensors,
+         python3 (>= 3.6),
+         python3-matplotlib,
+         python3-numpy,
+         python3-pandas,
+         ${misc:Depends},
+         ${shlibs:Depends}
 Description: CPU Temperature Monitor
  A utility to log and plot CPU temperature over time.
