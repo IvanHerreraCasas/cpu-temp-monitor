@@ -83,6 +83,9 @@ class CPUTempMonitor:
         plot_temperatures(args)
 
     def set_interval(self, args):
+        if 60 % args.interval!= 0:
+             print("The interval must be a divisor of 60")
+             return
         self.config['cron']['interval'] = str(args.interval)
         self._update_cron()
         self._update_config()
