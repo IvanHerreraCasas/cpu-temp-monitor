@@ -1,3 +1,9 @@
+cpu-temp-monitor (1.0.1-1) noble; urgency=medium
+
+  * Fixed incorret use of add_threshold instead of show_threshold  
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Fri, 06 Sep 2024 15:32:05 -0500
+
 cpu-temp-monitor (1.0.0-1) noble; urgency=medium
 
   * Initial release.
