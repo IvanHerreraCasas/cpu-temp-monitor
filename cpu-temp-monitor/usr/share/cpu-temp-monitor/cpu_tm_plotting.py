@@ -138,7 +138,7 @@ def plot_temperatures(args):
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25), ncol=4)
     plt.tight_layout(pad=1.25)
 
-    if args.add_threshold:
+    if args.show_threshold:
         plt.axhline(y=threshold, color='r', linestyle='-', label='Threshold')
 
 
