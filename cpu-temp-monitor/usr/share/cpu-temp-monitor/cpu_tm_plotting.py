@@ -76,7 +76,10 @@ def resample_data(df, args):
     }
     
     df_resampled = df.resample(resample_map[resolution]).agg({col: lambda x: get_aggregation(type=type, data=x) for col in df.columns})
-    return df_resampled
+    
+    if resolution == 'interval':
+        resolution = f'{interval} minutes'
+    return df_resampled, resolution
 
 def save_plot(args):
     plot_filepath = args.filepath
@@ -92,8 +95,6 @@ def save_plot(args):
 
 
 def plot_temperatures(args):
-    days = args.days
-    resolution = args.resolution
     threshold = args.threshold
     cores = args.cores
 
@@ -104,7 +105,7 @@ def plot_temperatures(args):
         print(f"No data available for the specified time range")
         return
 
-    df_resampled = resample_data(df, args)
+    df_resampled, resolution = resample_data(df, args)
 
     # Plot the data
     plt.figure(figsize=(12, 6))
