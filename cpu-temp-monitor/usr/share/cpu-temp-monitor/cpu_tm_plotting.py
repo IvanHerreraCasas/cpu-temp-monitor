@@ -82,12 +82,12 @@ def resample_data(df, args):
     return df_resampled, resolution
 
 def save_plot(args):
-    plot_filepath = args.filepath
+    plot_filepath = str(args.filepath)
 
     plot_path = Path(plot_filepath)
     plot_path.parent.mkdir(exist_ok=True, parents=True)
 
-    plt.savefig(plot_path, bbox_inches='tight')
+    plt.savefig(plot_filepath, bbox_inches='tight')
 
     print(f"Plot saved as {plot_filepath}")
 
