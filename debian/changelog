@@ -1,3 +1,9 @@
+cpu-temp-monitor (1.0.3-1) noble; urgency=medium
+
+  * Show minutes instead of interval resolution
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Mon, 11 Oct 2024 15:00:00 -0500
+
 cpu-temp-monitor (1.0.2-1) noble; urgency=medium
 
   * Show minutes instead of interval resolution
