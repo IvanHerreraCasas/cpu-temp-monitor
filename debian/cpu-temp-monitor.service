@@ -1,0 +1,12 @@
+[Unit]
+Description=PC Temperature Monitor
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/cpu-tm-service.sh
+Restart=always
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

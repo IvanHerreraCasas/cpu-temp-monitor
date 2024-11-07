@@ -1,12 +1,13 @@
 # Makefile for CPU Temperature Monitor
 
 # Define variables
-PREFIX ?= /usr/
+PREFIX ?= /usr
 DESTDIR ?=
 
 # Directories
 SHAREDIR = $(DESTDIR)$(PREFIX)/share/cpu-temp-monitor
 ETCDIR = $(DESTDIR)/etc/cpu-temp-monitor
+BINDIR = $(DESTDIR)$(PREFIX)/bin
 
 # Files
 PYTHON_CLI_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu-tm-cli.py
@@ -15,6 +16,7 @@ PYTHON_LOGGING_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_loggi
 PYTHON_PLOTTING_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_plotting.py
 PYTHON_UTILS_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_utils.py
 CONFIG_FILE = cpu-temp-monitor/etc/cpu-temp-monitor/config.ini
+SH_SERVICE_FILE = cpu-temp-monitor/usr/bin/cpu-tm-service.sh
 
 # Targets
 .PHONY: all install clean
@@ -26,6 +28,7 @@ install:
 	# Create directories
 	install -d $(SHAREDIR)
 	install -d $(ETCDIR)
+	install -d $(BINDIR)
 
 
 	# Install Python script
@@ -37,6 +40,9 @@ install:
 
 	# Install config file
 	install -m 644 $(CONFIG_FILE) $(ETCDIR)/config.ini
+
+	# Install SH service script
+	install -m 744 $(SH_SERVICE_FILE) $(BINDIR)/cpu-tm-service.sh
 
 clean:
 	@echo "Nothing to clean."

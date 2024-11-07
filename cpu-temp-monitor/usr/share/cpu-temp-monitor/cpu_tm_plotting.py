@@ -45,8 +45,8 @@ def filter_data(df, args):
     start_time = args.start_time
     end_time = args.end_time
 
-    time_index = pd.date_range(start=start_time, end=end_time, freq=f'{interval}T')
-    df = df.reindex(time_index, tolerance=pd.Timedelta(minutes=interval), method="nearest")
+    time_index = pd.date_range(start=start_time, end=end_time, freq=f'{interval}s')
+    df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=interval), method="nearest")
 
     return df
         
@@ -60,7 +60,10 @@ def resample_data(df, args):
     # Resample data based on resolution
     if resolution == 'auto':
         if days <= 1:
-            resolution = 'interval'
+            if 60 % interval == 0:
+                resolution = 'minute'
+            else:
+                resolution = 'interval'
         elif days <= 35:
             resolution = 'hour'
         elif days <= 366:
@@ -69,7 +72,8 @@ def resample_data(df, args):
             resolution = 'month'
 
     resample_map = {
-        'interval': f'{interval}T',
+        'interval': f'{interval}s',
+        'minute': 'T',
         'hour': 'H',
         'day': 'D',
         'month': 'M'
@@ -78,7 +82,10 @@ def resample_data(df, args):
     df_resampled = df.resample(resample_map[resolution]).agg({col: lambda x: get_aggregation(type=type, data=x) for col in df.columns})
     
     if resolution == 'interval':
-        resolution = f'{interval} minutes'
+        if interval % 60 == 0:
+            resolution = f'{interval // 60} minutes'
+        else:
+            resolution = f'{interval} seconds'
     return df_resampled, resolution
 
 def save_plot(args):

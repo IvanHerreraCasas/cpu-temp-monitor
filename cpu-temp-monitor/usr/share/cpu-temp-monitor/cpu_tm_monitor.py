@@ -3,17 +3,14 @@ import os
 import configparser
 from datetime import datetime, timedelta
 
-from cpu_tm_utils import open_file
+from cpu_tm_utils import open_file, IntervalException
 from cpu_tm_logging import log_temperatures
 from cpu_tm_plotting import plot_temperatures
-
 class CPUTempMonitor:
-    def __init__(self, config_file, cron_file):
+    def __init__(self, config_file):
         self.config_file = config_file
-        self.cron_file = cron_file
         self.config = self._load_config()
         self.settings = self.config['Settings']
-        self.cron = self.config['cron']
 
     def _load_config(self):
         config = configparser.ConfigParser()
@@ -23,12 +20,6 @@ class CPUTempMonitor:
     def _update_config(self):
         with open(self.config_file, 'w') as configfile:
             self.config.write(configfile)
-
-    def _update_cron(self):
-        cron_job = f"*/{self.log_interval} * * * * root cpu-temp-monitor log\n"
-        
-        with open(self.cron_file, 'w') as cron_file:
-            cron_file.write(cron_job)
 
     @property
     def def_log_file(self):
@@ -44,7 +35,10 @@ class CPUTempMonitor:
     
     @property
     def log_interval(self):
-        return self.cron.getint('interval', 10)
+        interval = self.settings.getint('interval', 600)
+        if 3600 % interval != 0:
+            raise IntervalException("Interval must be a divisor of 1 hour == 3600s")
+        return interval
     
     @property
     def def_threshold(self):
@@ -81,11 +75,3 @@ class CPUTempMonitor:
             args.end_time = datetime.now()
 
         plot_temperatures(args)
-
-    def set_interval(self, args):
-        if 60 % args.interval!= 0:
-             print("The interval must be a divisor of 60")
-             return
-        self.config['cron']['interval'] = str(args.interval)
-        self._update_cron()
-        self._update_config()

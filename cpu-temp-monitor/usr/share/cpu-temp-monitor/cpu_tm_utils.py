@@ -16,3 +16,6 @@ def open_file(file_path):
             os.system(f'xdg-open "{file_path}"')
     except Exception as e:
         print(f"Error opening {file_path}: {str(e)}")
+
+class IntervalException(Exception):
+    pass
