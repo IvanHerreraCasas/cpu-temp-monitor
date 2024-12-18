@@ -1,3 +1,11 @@
+cpu-temp-monitor (1.1.0-1) noble; urgency=medium
+
+  * Change to service instead of cron to support seconds interval
+  * Improve exactitud of log interval
+  * Change format of log file to csv
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Mon, 18 Dec 2024 09:00:00 -0500
+
 cpu-temp-monitor (1.0.3-1) noble; urgency=medium
 
   * Show minutes instead of interval resolution
