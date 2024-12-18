@@ -71,7 +71,7 @@ class CPUTempMonitor:
             args.start_time = datetime.strptime(args.range[0], "%Y%m%d_%H%M%S")
             args.end_time = datetime.strptime(args.range[1], "%Y%m%d_%H%M%S")
         else:        
-            args.start_time = datetime.now() - timedelta(days=args.days)
+            args.start_time = datetime.now().date() - timedelta(days=args.days)
             args.end_time = datetime.now()
 
         plot_temperatures(args)
