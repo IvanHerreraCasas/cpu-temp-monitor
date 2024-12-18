@@ -15,6 +15,8 @@ PYTHON_MONITOR_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_monit
 PYTHON_LOGGING_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_logging.py
 PYTHON_PLOTTING_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_plotting.py
 PYTHON_UTILS_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_utils.py
+PYTHON_SERVICE_SCRIPT = cpu-temp-monitor/usr/share/cpu-temp-monitor/cpu_tm_service.py
+
 CONFIG_FILE = cpu-temp-monitor/etc/cpu-temp-monitor/config.ini
 SH_SERVICE_FILE = cpu-temp-monitor/usr/bin/cpu-tm-service.sh
 
@@ -37,6 +39,7 @@ install:
 	install -m 444 $(PYTHON_LOGGING_SCRIPT) $(SHAREDIR)/cpu_tm_logging.py
 	install -m 444 $(PYTHON_PLOTTING_SCRIPT) $(SHAREDIR)/cpu_tm_plotting.py
 	install -m 444 $(PYTHON_UTILS_SCRIPT) $(SHAREDIR)/cpu_tm_utils.py
+	install -m 444 $(PYTHON_SERVICE_SCRIPT) $(SHAREDIR)/cpu_tm_service.py
 
 	# Install config file
 	install -m 644 $(CONFIG_FILE) $(ETCDIR)/config.ini

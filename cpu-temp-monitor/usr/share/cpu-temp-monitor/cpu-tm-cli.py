@@ -3,6 +3,7 @@
 import argparse
 
 from cpu_tm_monitor import CPUTempMonitor
+from cpu_tm_service import CPUTempService
 
 
 def main():
@@ -10,6 +11,7 @@ def main():
     CONFIG_FILE = "/etc/cpu-temp-monitor/config.ini"
     
     monitor = CPUTempMonitor(CONFIG_FILE)
+    service = CPUTempService()
 
     parser = argparse.ArgumentParser(description="CPU Temperature Monitor CLI")
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand")
@@ -35,6 +37,24 @@ def main():
     open_parser = subparsers.add_parser("open", help="Open application-related files")
     open_parser.add_argument("file", choices=["config", "log", "plot"], help="File to open")
     open_parser.set_defaults(func=monitor.open_app_file)
+    
+    start_parser = subparsers.add_parser("start", help="Start the CPU Temperature Monitor service")
+    start_parser.set_defaults(func=service.start)
+
+    stop_parser = subparsers.add_parser("stop", help="Stop the CPU Temperature Monitor service")
+    stop_parser.set_defaults(func=service.stop)
+
+    restart_parser = subparsers.add_parser("restart", help="Restart the CPU Temperature Monitor service")
+    restart_parser.set_defaults(func=service.restart)
+
+    status_parser = subparsers.add_parser("status", help="Check the status of the CPU Temperature Monitor service")
+    status_parser.set_defaults(func=service.status)
+
+    enable_parser = subparsers.add_parser("enable", help="Enable the CPU Temperature Monitor service to start on boot")
+    enable_parser.set_defaults(func=service.enable)
+
+    disable_parser = subparsers.add_parser("disable", help="Disable the CPU Temperature Monitor service from starting on boot")
+    disable_parser.set_defaults(func=service.disable)
 
     args = parser.parse_args()
 
