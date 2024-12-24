@@ -21,8 +21,17 @@ def get_aggregation(type, data):
 def get_log_temperatures(args):
     log_file = args.input
     
-    # Read the CSV file
-    df = pd.read_csv(log_file, parse_dates=['Timestamp'])
+    df = pd.read_csv(log_file)
+    
+    # Convert to datetime with coerce option to set invalid dates to NaT
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'], errors='coerce')
+    
+    # Drop rows where Timestamp is NaT (Not a Time)
+    df = df.dropna(subset=['Timestamp'])
+    
+    # Drop duplicates and sort
+    df = df.drop_duplicates(subset=['Timestamp'])
+    df = df.sort_values('Timestamp')
     
     # Set timestamp as index
     df.set_index('Timestamp', inplace=True)
@@ -36,7 +45,6 @@ def filter_data(df, args):
 
     time_index = pd.date_range(start=start_time, end=end_time, freq=f'{interval}s')
     
-    df = df.drop_duplicates()
     df = df.reindex(time_index, tolerance=pd.Timedelta(seconds=interval), method="nearest")
 
     return df
