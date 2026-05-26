@@ -1,3 +1,4 @@
+import ast
 import subprocess
 import csv
 import re
@@ -46,26 +47,29 @@ def log_temperatures(args):
                         # Extract timestamp and temperatures
                         match = re.match(r'([\d-]+ [\d:]+) - CPU Temperatures: ({.*})', line.strip())
                         if match:
-                            timestamp = match.group(1)
-                            temps_dict = eval(match.group(2))  # Convert string representation to dict
-                            entries.append((timestamp, temps_dict))
-                
+                            entry_ts = match.group(1)
+                            temps_dict = ast.literal_eval(match.group(2))  # Convert string representation to dict
+                            entries.append((entry_ts, temps_dict))
+
                 # Create new CSV file
                 temp_log_path = log_path.with_suffix('.csv')
                 with temp_log_path.open('w', newline='') as f:
-                    # Determine all unique cores
-                    all_cores = set()
+                    # Determine all unique cores, preserving first-seen order so
+                    # the header is deterministic and data rows stay aligned.
+                    all_cores = []
                     for _, temp_dict in entries:
-                        all_cores.update(temp_dict.keys())
-                    
+                        for core in temp_dict:
+                            if core not in all_cores:
+                                all_cores.append(core)
+
                     # Write headers
-                    headers = ['Timestamp'] + list(all_cores)
+                    headers = ['Timestamp'] + all_cores
                     writer = csv.writer(f)
                     writer.writerow(headers)
                     
                     # Write data rows
-                    for timestamp, temp_dict in entries:
-                        row = [timestamp] + [temp_dict.get(core, '') for core in headers[1:]]
+                    for entry_ts, temp_dict in entries:
+                        row = [entry_ts] + [temp_dict.get(core, '') for core in headers[1:]]
                         writer.writerow(row)
                 
                 # Remove old log file and rename new file
@@ -73,20 +77,22 @@ def log_temperatures(args):
                 temp_log_path.rename(log_path)
                 print("Log file converted successfully.")
             
-            # Prepare CSV writing
-            file_exists = log_path.stat().st_size > 0
-            
+            # If the file already has content, follow its existing header so
+            # appended rows stay aligned with the columns. Otherwise (re)create
+            # the header from the current reading.
+            has_content = log_path.stat().st_size > 0
+            if has_content:
+                with log_path.open("r", newline='') as f:
+                    header = next(csv.reader(f), None)
+                cores = header[1:] if header else list(temps.keys())
+            else:
+                cores = list(temps.keys())
+
             with log_path.open("a", newline='') as f:
                 writer = csv.writer(f)
-                
-                # Write headers if file is new or was just converted
-                if not file_exists:
-                    headers = ['Timestamp'] + list(temps.keys())
-                    writer.writerow(headers)
-                
-                # Write data row
-                row = [timestamp] + [temps.get(core, '') for core in temps.keys()]
-                writer.writerow(row)
+                if not has_content:
+                    writer.writerow(['Timestamp'] + cores)
+                writer.writerow([timestamp] + [temps.get(core, '') for core in cores])
         else:
             # New file, create with headers
             with log_path.open("w", newline='') as f:
