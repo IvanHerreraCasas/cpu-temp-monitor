@@ -1,3 +1,13 @@
+cpu-temp-monitor (1.1.2-1) noble; urgency=medium
+
+  * plotting: plot pre-migration history again. Aggregation dropped any time
+    bucket containing a missing sample, so logs recorded at the old 10-minute
+    cron cadence became invisible once the service logged every few seconds.
+    Aggregate the readings actually present and only drop genuinely empty
+    buckets, so real gaps still break the line.
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Tue, 26 May 2026 15:30:10 -0500
+
 cpu-temp-monitor (1.1.1-1) noble; urgency=medium
 
   * service: report status correctly when the service is inactive instead of
