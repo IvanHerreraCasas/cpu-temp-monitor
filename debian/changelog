@@ -1,3 +1,16 @@
+cpu-temp-monitor (1.1.1-1) noble; urgency=medium
+
+  * service: report status correctly when the service is inactive instead of
+    printing an error (systemctl status exits non-zero while still inactive)
+  * service: make the worker script robust to starts during seconds 08/09 and
+    stop sourcing the INI file (logged a spurious error every start)
+  * logging: keep CSV columns aligned on append and harden the legacy-log
+    conversion (deterministic header order, ast.literal_eval, correct timestamp)
+  * build: install the CLI as 0755 so non-root users can run it
+  * docs: document the systemd service instead of the removed cron command
+
+ -- Ivan Herrera Casas <ivanhc.pp@gmail.com>  Tue, 26 May 2026 09:00:00 -0500
+
 cpu-temp-monitor (1.1.0-1) noble; urgency=medium
 
   * Change to service instead of cron to support seconds interval
