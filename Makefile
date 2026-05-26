@@ -33,8 +33,9 @@ install:
 	install -d $(BINDIR)
 
 
-	# Install Python script
-	install -m 744 $(PYTHON_CLI_SCRIPT) $(SHAREDIR)/cpu-tm-cli.py
+	# Install Python script (755: the /usr/bin symlink resolves here, so it
+	# must be executable by non-root users running plot/open/status)
+	install -m 755 $(PYTHON_CLI_SCRIPT) $(SHAREDIR)/cpu-tm-cli.py
 	install -m 444 $(PYTHON_MONITOR_SCRIPT) $(SHAREDIR)/cpu_tm_monitor.py
 	install -m 444 $(PYTHON_LOGGING_SCRIPT) $(SHAREDIR)/cpu_tm_logging.py
 	install -m 444 $(PYTHON_PLOTTING_SCRIPT) $(SHAREDIR)/cpu_tm_plotting.py
