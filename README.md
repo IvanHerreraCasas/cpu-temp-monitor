@@ -18,7 +18,24 @@ To log the core temperatures:
 ```
 cpu-temp-monitor log [-f FILE]
 ```
-**Note:** The binary includes a cron job that logs the temperature periodically at an interval and to a file specified in the configuration file.
+**Note:** The package installs a systemd service (`cpu-temp-monitor.service`) that
+logs the temperature periodically. The logging interval and log file are taken
+from the configuration file. The service is enabled and started automatically on
+installation.
+
+### Controlling the Service
+
+Manage the background logging service:
+```
+cpu-temp-monitor start      # start logging now
+cpu-temp-monitor stop       # stop logging
+cpu-temp-monitor restart    # restart (e.g. after changing the interval)
+cpu-temp-monitor status     # show the service status
+cpu-temp-monitor enable     # start automatically on boot
+cpu-temp-monitor disable    # do not start on boot
+```
+These commands wrap `systemctl` and use `sudo`, so you may be prompted for your
+password.
 
 ### Plotting Temperatures
 
@@ -44,10 +61,12 @@ The configuration file (located at `/etc/cpu-temp-monitor/config.ini`) includes 
 - plot_dir
 - plot_filename
 - threshold
+- interval (logging interval in seconds, used by the service)
 
-To modify the cron log interval:
+To change the logging interval, edit the `interval` value in the configuration
+file and restart the service:
 ```
-sudo cpu-temp-monitor cron -i <interval>
+sudo cpu-temp-monitor restart
 ```
 
 ## Dependencies
