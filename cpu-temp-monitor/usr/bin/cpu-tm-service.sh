@@ -1,6 +1,12 @@
 #!/bin/bash
-# Source configuration file
-source /etc/cpu-temp-monitor/config.ini
+set -u
+
+CONFIG_FILE=/etc/cpu-temp-monitor/config.ini
+
+# Read the logging interval from the [Settings] section without sourcing the
+# file (an INI is not valid shell; sourcing it logged a spurious
+# "[Settings]: command not found" on every start).
+interval=$(awk -F= '/^[[:space:]]*interval[[:space:]]*=/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' "$CONFIG_FILE" 2>/dev/null)
 
 # Get logging interval from config or use default of 600 seconds
 LOG_INTERVAL=${interval:-600}
@@ -47,8 +53,9 @@ precise_monitor() {
 wait_for_minute_start() {
     current_seconds=$(date +%S)
     if [ "$current_seconds" != "00" ]; then
-        # Calculate seconds until next minute
-        seconds_to_wait=$((60 - current_seconds))
+        # Calculate seconds until next minute. Force base 10: "08"/"09" are
+        # invalid octal and would abort the arithmetic otherwise.
+        seconds_to_wait=$((60 - 10#$current_seconds))
         
         # Wait until 0.1 seconds before the target time
         sleep $((seconds_to_wait - 1))
