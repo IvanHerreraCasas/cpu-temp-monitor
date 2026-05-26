@@ -9,7 +9,12 @@ from pathlib import Path
 from cpu_tm_utils import open_file
 
 def get_aggregation(type, data):
-    if any(pd.isnull(data)):
+    # Aggregate only the readings present in this bucket and return NaN only
+    # when it is genuinely empty, so real gaps still break the line. A strict
+    # "any NaN -> NaN" hid sparse history once the interval shrank to seconds
+    # and the reindex grid became far denser than older 10-minute data.
+    data = data[~pd.isnull(data)]
+    if len(data) == 0:
         return np.nan
     if  type == 'mean':
             return np.mean(data)
